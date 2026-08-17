@@ -9,7 +9,11 @@ function getAllowedOrigins() {
     process.env.FRONTEND_URL,
     process.env.NEXT_PUBLIC_SITE_URL,
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined
-  ].filter(Boolean) as string[];
+  ]
+    .filter(Boolean)
+    .flatMap((value) => String(value).split(","))
+    .map((value) => value.trim())
+    .filter(Boolean);
 
   return configuredUrls
     .map((value) => {
