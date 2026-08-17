@@ -4,11 +4,29 @@ import { sendOrderEmails } from "@/lib/email";
 import { orderSchema, type PreparedOrder } from "@/lib/order-schema";
 import { product } from "@/lib/product";
 
+function getAllowedOrigins() {
+  const configuredUrls = [
+    process.env.FRONTEND_URL,
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined
+  ].filter(Boolean) as string[];
+
+  return configuredUrls
+    .map((value) => {
+      try {
+        return new URL(value).origin;
+      } catch {
+        return value.replace(/\/$/, "");
+      }
+    })
+    .filter(Boolean);
+}
+
 export async function POST(request: Request) {
   try {
-    const frontendUrl = process.env.FRONTEND_URL;
     const origin = request.headers.get("origin");
-    if (frontendUrl && origin && origin !== frontendUrl) {
+    const allowedOrigins = getAllowedOrigins();
+    if (allowedOrigins.length > 0 && origin && !allowedOrigins.includes(origin)) {
       return NextResponse.json({ success: false, error: "Request origin is not allowed." }, { status: 403 });
     }
 
