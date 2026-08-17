@@ -25,6 +25,17 @@ function requiredEnv(name: string) {
   return value;
 }
 
+function normalizePrivateKey(value: string) {
+  const trimmed = value.trim();
+  const unquoted =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+      ? trimmed.slice(1, -1)
+      : trimmed;
+
+  return unquoted.replace(/\\n/g, "\n");
+}
+
 async function getSheetId(sheets: ReturnType<typeof google.sheets>, spreadsheetId: string, tabName: string) {
   const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
   const target = spreadsheet.data.sheets?.find((sheet) => sheet.properties?.title === tabName);
@@ -149,7 +160,7 @@ async function prepareSheetLayout(sheets: ReturnType<typeof google.sheets>, spre
 export async function appendOrderToSheet(order: PreparedOrder) {
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
   const clientEmail = requiredEnv("GOOGLE_SERVICE_ACCOUNT_EMAIL");
-  const privateKey = requiredEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(requiredEnv("GOOGLE_PRIVATE_KEY"));
   const tabName = process.env.GOOGLE_SHEET_TAB_NAME || "Sheet1";
 
   const auth = new google.auth.JWT({
