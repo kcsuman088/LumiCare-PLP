@@ -26,14 +26,30 @@ function requiredEnv(name: string) {
 }
 
 function normalizePrivateKey(value: string) {
-  const trimmed = value.trim();
+  let trimmed = value.trim();
+
+  const jsonStyleMatch = trimmed.match(/"private_key"\s*:\s*"([\s\S]*?)"\s*,?$/);
+  if (jsonStyleMatch?.[1]) {
+    trimmed = jsonStyleMatch[1];
+  }
+
   const unquoted =
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
     (trimmed.startsWith("'") && trimmed.endsWith("'"))
       ? trimmed.slice(1, -1)
       : trimmed;
 
-  return unquoted.replace(/\\n/g, "\n");
+  const normalized = unquoted
+    .replace(/,$/, "")
+    .replace(/\\\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .trim();
+
+  if (!normalized.includes("-----BEGIN PRIVATE KEY-----") || !normalized.includes("-----END PRIVATE KEY-----")) {
+    throw new Error("GOOGLE_PRIVATE_KEY is not a valid service-account private key.");
+  }
+
+  return normalized;
 }
 
 async function getSheetId(sheets: ReturnType<typeof google.sheets>, spreadsheetId: string, tabName: string) {
