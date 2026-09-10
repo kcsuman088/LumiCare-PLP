@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { formatMoney, getOrderTotals, product } from "@/lib/product";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 type FieldErrors = Record<string, string>;
 
@@ -14,6 +15,17 @@ export function CheckoutForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    trackMetaEvent("InitiateCheckout", {
+      content_ids: ["lumicare-vitamin-c-glow-serum"],
+      content_name: product.name,
+      content_type: "product",
+      currency: "NPR",
+      num_items: totals.quantity,
+      value: totals.totalPrice
+    });
+  }, [totals.quantity, totals.totalPrice]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,6 +66,19 @@ export function CheckoutForm() {
       if (!response.ok || !result.success) {
         throw new Error(result.error || "Order submission failed. Please try again.");
       }
+
+      trackMetaEvent(
+        "Purchase",
+        {
+          content_ids: ["lumicare-vitamin-c-glow-serum"],
+          content_name: product.name,
+          content_type: "product",
+          currency: "NPR",
+          num_items: totals.quantity,
+          value: totals.totalPrice
+        },
+        { eventID: result.orderId }
+      );
 
       const params = new URLSearchParams({
         orderId: result.orderId,

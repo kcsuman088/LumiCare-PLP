@@ -4,6 +4,7 @@ import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatMoney, getOrderTotals, product } from "@/lib/product";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 export function QuantityOrder({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
@@ -11,6 +12,15 @@ export function QuantityOrder({ compact = false }: { compact?: boolean }) {
   const totals = useMemo(() => getOrderTotals(quantity), [quantity]);
 
   function goToCheckout() {
+    trackMetaEvent("AddToCart", {
+      content_ids: ["lumicare-vitamin-c-glow-serum"],
+      content_name: product.name,
+      content_type: "product",
+      currency: "NPR",
+      num_items: totals.quantity,
+      value: totals.totalPrice
+    });
+
     const params = new URLSearchParams({
       productName: product.name,
       quantity: String(totals.quantity),

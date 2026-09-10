@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ArrowRight, BadgeCheck, Headphones, PackageCheck, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { Header } from "@/components/Logo";
+import { MetaPixelEvent } from "@/components/MetaPixel";
 import { ProductGallery } from "@/components/ProductGallery";
 import { QuantityOrder } from "@/components/QuantityOrder";
 import { formatMoney, product } from "@/lib/product";
@@ -15,6 +16,16 @@ const trustItems = [
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-cream">
+      <MetaPixelEvent
+        eventName="ViewContent"
+        data={{
+          content_ids: ["lumicare-vitamin-c-glow-serum"],
+          content_name: product.name,
+          content_type: "product",
+          currency: "NPR",
+          value: product.offerPrice
+        }}
+      />
       <Header />
 
       <section className="relative overflow-hidden border-b border-white">
