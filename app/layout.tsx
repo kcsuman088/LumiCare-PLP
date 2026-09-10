@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import { MetaPixelPageView } from "@/components/MetaPixel";
@@ -50,7 +51,9 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-        <MetaPixelPageView />
+        <Suspense fallback={null}>
+          <MetaPixelPageView />
+        </Suspense>
         {children}
       </body>
     </html>
